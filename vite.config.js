@@ -11,10 +11,10 @@ export default defineConfig({
   define: {
     'process.env': {}
   },
+  base: '/spell _search/',
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url))
     }
-  },
-  base: '/spell_search/'
+  }
 })
