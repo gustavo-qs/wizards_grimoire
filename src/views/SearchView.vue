@@ -47,7 +47,12 @@ function selectSpell(pt = false) {
       <p><strong>Name:</strong> {{ spellObj.name }}</p>
       <p><strong>Level:</strong> {{ spellObj.level }}</p>
       <p><strong>Range:</strong> {{ spellObj.range }}</p>
-      <p><strong>Components:</strong> {{ spellObj.components }}</p>
+
+      <p><strong>Components:</strong> 
+        <span v-if="spellObj.V">V</span>
+        <span v-if="spellObj.S">S</span>
+        <span v-if="spellObj.M">M: {{ spellObj.M }}</span>
+      </p>
 
       <p><strong>Duration:</strong> {{ spellObj.duration }}</p>
       <br>
