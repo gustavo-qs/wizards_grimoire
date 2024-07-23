@@ -11,7 +11,7 @@ export default defineConfig({
   define: {
     'process.env': {}
   },
-  base: '/spell _search/',
+  base: '/spell_search/',
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url))
