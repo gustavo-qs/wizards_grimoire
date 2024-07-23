@@ -7,24 +7,25 @@ var selectedSpell = ref(null),
     spellObj = ref(null),
     diceNotationRegex = /\b\d+d\d+(?:\s*\+\s*\d+)?(?:\s+\w+\s+damage)?\b/g,
     savingThrowRegex = /\b(\w+)\s+saving throw\b/gi,
-    diceNotations = ref([]),
+    diceNotations = ref(new Set([])),
     match = ref(null),
-    savingThrows = ref([]),
+    savingThrows = ref(new Set([])),
     translate = ref(false);
 
 function selectSpell(pt = false) {
-  savingThrows.value = [];
-  diceNotations.value = [];
+  savingThrows.value.clear();
+  diceNotations.value.clear();
 
   spellObj.value = spells.find(spell => spell.name === selectedSpell.value);
 
   if(pt) spellObj.value = translatedSpells.find(spell => spell.id == spellObj.value.id);
 
   while ((match.value = diceNotationRegex.exec(spellObj.value.description)) !== null) {
-    diceNotations.value.push(match.value[0]);
+    diceNotations.value.add(match.value[0]);
   }
+
   while ((match.value = savingThrowRegex.exec(spellObj.value.description)) !== null) {
-    savingThrows.value.push(`${match.value[1]} saving throw`);
+    savingThrows.value.add(`${match.value[1]} saving throw`);
   }
 };
 
@@ -55,22 +56,19 @@ function selectSpell(pt = false) {
       </p>
 
       <p><strong>Duration:</strong> {{ spellObj.duration }}</p>
-      <br>
 
       <p><strong>Description:</strong> {{ spellObj.description }}</p>
-      <br>
 
       <p v-if="spellObj.cast_higher"><strong>If cast at a higher level:</strong> {{ spellObj.higher_levels }}</p>
-      <br>
 
-      <p v-if="diceNotations.length">
+      <p v-if="diceNotations.size">
         <strong>Dice Notations:</strong>
-        <span v-for="diceNotation in diceNotations" :key="diceNotation">{{ diceNotation }} </span><br>
+        <span v-for="diceNotation in diceNotations" :key="diceNotation">{{ diceNotation }} </span>
       </p>
 
-      <p v-if="savingThrows.length">
+      <p v-if="savingThrows.size">
         <strong>Saving Throws:</strong>
-        <span v-for="savingThrow in savingThrows" :key="savingThrow">{{ savingThrow }} </span><br>
+        <span v-for="savingThrow in savingThrows" :key="savingThrow">{{ savingThrow }} </span>
       </p>
 
       <button @click="selectSpell(translate = !translate)">
