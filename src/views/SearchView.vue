@@ -6,7 +6,7 @@ import { ref } from 'vue'
 var selectedSpell = ref(null),
     spellObj = ref(null),
     diceNotationRegex = /\b\d+d\d+(?:\s*\+\s*\d+)?(?:\s+\w+\s+damage)?\b/g,
-    savingThrowRegex = /\b(\w+)\s+saving throw\b/gi,
+    savingThrowRegex = /\b(Intelligence|Dexterity|Strength|Charisma|Constitution|Wisdom)\s+saving throw\b/gi,
     diceNotations = ref(new Set([])),
     match = ref(null),
     savingThrows = ref(new Set([])),
