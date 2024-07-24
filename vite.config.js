@@ -14,7 +14,7 @@ export default defineConfig({
         description: "A simple Wizard's Grimoire app for D&D 5e",
         theme_color: '#ffffff',
         display: 'standalone',
-        start_url: '/spell_search/',
+        start_url: '/wizards_grimoire/',
         icons: [
           {
             src: '/public/icons8-dungeons-and-dragons-color-16.ico',
@@ -44,7 +44,7 @@ export default defineConfig({
   define: {
     'process.env': {}
   },
-  base: '/spell_search/',
+  base: '/wizards_grimoire/',
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url))
