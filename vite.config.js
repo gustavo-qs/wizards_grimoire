@@ -9,9 +9,9 @@ export default defineConfig({
     vue(),
     VitePWA({
       manifest: {
-        name: 'Spell Search',
-        short_name: 'Spell Search',
-        description: 'A simple spell search app for D&D 5e',
+        name: "Wizard's Grimoire",
+        short_name: "Wizard's Grimoire",
+        description: "A simple Wizard's Grimoire app for D&D 5e",
         theme_color: '#ffffff',
         display: 'standalone',
         start_url: '/spell_search/',
@@ -22,13 +22,13 @@ export default defineConfig({
             type: 'image/x-icon'
           },
           {
-            src: '/public/icons8-dungeons-and-dragons-color-120.png',
-            sizes: '120x120',
+            src: '/public/icons8-dungeons-and-dragons-color-240.png',
+            sizes: '240x240',
             type: 'image/png'
           },
           {
-            src: '/public/icons8-dungeons-and-dragons-color-96.png',
-            sizes: '96x96',
+            src: '/public/icons8-dungeons-and-dragons-color-480.png',
+            sizes: '480x480',
             type: 'image/png'
           }
         ]

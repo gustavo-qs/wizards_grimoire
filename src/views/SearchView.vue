@@ -55,7 +55,7 @@ function selectSpell(pt = false) {
         <span v-if="spellObj.M">M: {{ spellObj.M }}</span>
       </p>
 
-      <p><strong>Duration:</strong> {{ spellObj.duration }}</p>
+      <p><strong>Duration:</strong> <span v-if=spellObj.concentration>Concentration</span> {{ spellObj.duration }}</p>
 
       <p><strong>Description:</strong> {{ spellObj.description }}</p>
 
