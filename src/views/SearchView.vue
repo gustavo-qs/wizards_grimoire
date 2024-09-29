@@ -12,7 +12,7 @@ var selectedSpell = ref(null),
     showModal = ref(false),
     selectedClasses = ref([]),
     selectedLevels = ref([]),
-    filteredSpells = ref(spells);
+    filteredSpells = ref(spells.sort((a, b) => a.level - b.level));
 
 function selectSpell(pt = false) {
 
@@ -47,7 +47,7 @@ function selectFilteredSpell(spellName) {
       </label>
       <datalist id="spells">
         <option v-for="spell in filteredSpells" :key="spell.name" :value="spell.name" />
-      </datalist>
+      </datalist><br>
       <button @click="selectSpell()" type="submit">Submit</button>
     </form>
 
