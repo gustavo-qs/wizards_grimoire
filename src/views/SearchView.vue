@@ -1,69 +1,51 @@
 <script setup>
-import spells from '../assets/spells.json'
-import { ref } from 'vue'
-import SpellModal from '../components/SpellModal.vue'
+  import spells from '../assets/spells.json'
+  import { ref, watch } from 'vue'
+  import SpellModal from '../components/SpellModal.vue'
 
-// Define available D&D classes and levels
-const classes = ['Artificer', 'Bard', 'Cleric', 'Druid', 'Paladin', 'Ranger', 'Sorcerer', 'Warlock', 'Wizard'];
-const levels = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
+  const classes = ['Artificer', 'Bard', 'Cleric', 'Druid', 'Paladin', 'Ranger', 'Sorcerer', 'Warlock', 'Wizard'];
+  const levels = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
 
-var selectedSpell = ref(null),
-    spellObj = ref(null),
-    showModal = ref(false),
-    selectedClasses = ref([]),
-    selectedLevels = ref([]),
-    filteredSpells = ref(spells.sort((a, b) => a.level - b.level));
+  var selectedSpell = ref(null),
+      spellObj = ref(null),
+      showModal = ref(false),
+      selectedClasses = ref([]),
+      selectedLevels = ref([]),
+      searchTerm = ref(''), // Add this to track the search term
+      filteredSpells = ref(spells.sort((a, b) => a.level - b.level));
 
-function selectSpell(pt = false) {
+  function selectSpell() {
+    spellObj.value = spells.find(spell => spell.name === selectedSpell.value);
+    showModal.value = true;
+  }
 
-  spellObj.value = spells.find(spell => spell.name === selectedSpell.value);
+  function filterSpells(){
+    filteredSpells.value = spells.filter(spell => {
+      const matchesClass = selectedClasses.value.length === 0 || selectedClasses.value.some(cls => spell.classes.includes(cls));
+      const matchesLevel = selectedLevels.value.length === 0 || selectedLevels.value.includes(spell.level);
+      const matchesSearch = spell.name.toLowerCase().includes(searchTerm.value.toLowerCase()); // Add search functionality
+      return matchesClass && matchesLevel && matchesSearch;
+    });
 
-  showModal.value = true;
-}
+    filteredSpells.value = filteredSpells.value.sort((a, b) => a.level - b.level);
+  }
 
-// Filter spells based on selected classes and levels
-function filterSpells() {
-  filteredSpells.value = spells.filter(spell => {
-    const matchesClass = selectedClasses.value.length === 0 || selectedClasses.value.some(cls => spell.classes.includes(cls));
-    const matchesLevel = selectedLevels.value.length === 0 || selectedLevels.value.includes(spell.level);
-    return matchesClass && matchesLevel;
+  // Watch searchTerm and apply filtering as the user types
+  watch(searchTerm, () => {
+    filterSpells();
   });
 
-  filteredSpells.value = filteredSpells.value.sort((a, b) => a.level - b.level);
-}
-
-// Select a spell from the filtered list
-function selectFilteredSpell(spellName) {
-  selectedSpell.value = spellName;
-  selectSpell();  // Call the selectSpell function to show the spell details
-}
+  function selectFilteredSpell(spellName) {
+    selectedSpell.value = spellName;
+    selectSpell();
+  }
 </script>
 
 <template>
   <div class="container">
     <form @submit.prevent>
-      <label>Find a spell:
-        <input list="spells" name="spells" v-model="selectedSpell" />
-      </label>
-      <datalist id="spells">
-        <option v-for="spell in filteredSpells" :key="spell.name" :value="spell.name" />
-      </datalist><br>
-      <button @click="selectSpell()" type="submit">Submit</button>
-    </form>
+      <SpellModal v-if="spellObj" :show="showModal" :spell="spellObj" @close="showModal = false" />
 
-    <SpellModal v-if="spellObj" :show="showModal" :spell="spellObj" @close="showModal = false" />
-
-    <br>
-
-  </div>
-
-  <br>
-
-  <div class="container">
-    <form @submit.prevent>
-      <h1>List spells</h1>
-
-      <!-- Class checkboxes -->
       <fieldset>
         <legend>Classes:</legend>
         <div v-for="cls in classes" :key="cls">
@@ -85,6 +67,11 @@ function selectFilteredSpell(spellName) {
         </div>
       </fieldset>
 
+      <fieldset>
+        <legend>Search for a spell:</legend>
+        <input type="text" v-model="searchTerm" placeholder="Enter spell name" />
+      </fieldset><br>
+
       <!-- List the filtered spells -->
       <div v-if="filteredSpells.length">
         <h3>Spells:</h3>
@@ -100,6 +87,32 @@ function selectFilteredSpell(spellName) {
 </template>
 
 <style scoped>
+
+input[type="text"] {
+  width: 100%; /* Full width input */
+  padding: 10px 15px; /* Padding around the input */
+  font-size: 1rem; /* Font size for better readability */
+  border-radius: 6px; /* Rounded corners */
+  border: 1px solid #ccc; /* Light border */
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1); /* Subtle inner shadow */
+  background-color: #f9f9f9; /* Light background color */
+  transition: all 0.3s ease; /* Smooth transition on focus */
+}
+
+/* Focused state for the input */
+input[type="text"]:focus {
+  outline: none; /* Remove default outline */
+  border-color: #007bff; /* Blue border on focus */
+  background-color: #fff; /* White background on focus */
+  box-shadow: 0 0 6px rgba(0, 123, 255, 0.4); /* Glowing effect */
+}
+
+/* Input placeholder styling */
+input[type="text"]::placeholder {
+  color: #aaa; /* Lighter color for the placeholder */
+  font-style: italic; /* Optional: Make placeholder text italic */
+}
+
 /* Styling for the container */
 .container {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
