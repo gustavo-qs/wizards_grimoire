@@ -14,6 +14,10 @@
           <span v-if="selectedSpell.M">M: {{ selectedSpell.M }}</span>
           <span v-if="selectedSpell.ritual">({{ selectedSpell.ritual && 'Ritual' }})</span>
         </p>
+        <p><strong>Casting Time:</strong> {{ selectedSpell.casting_time }}</p>
+        <p><strong>School:</strong> {{ selectedSpell.school }}</p>
+        <p><strong>Classes:</strong> {{ selectedSpell.classes }}</p>
+        <p><strong>Book:</strong> {{ selectedSpell.book }}</p>
         <p><strong>Duration:</strong> {{ selectedSpell.concentration ? 'Concentration' : '' }} {{ selectedSpell.duration }}</p>
         <p><strong>Description:</strong> {{ selectedSpell.description }}</p>
         <p v-if="selectedSpell.higher_levels"><strong>At higher levels:</strong> {{ selectedSpell.higher_levels }}</p>
@@ -93,25 +97,27 @@ function translateSpell() {
   left: 0;
   width: 100vw;
   height: 100vh;
-  background: rgba(0, 0, 0, 0.8); /* Dark overlay */
+  background: rgba(0, 0, 0, 0.85); /* Dark overlay with more opacity */
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 1000; /* Make sure it's on top */
-  padding: 10px; /* Padding for the overlay */
+  z-index: 1000;
+  padding: 10px;
+  font-family: 'Cinzel', serif; /* Fantasy-like font for D&D aesthetic */
 }
 
 .modal-content {
-  background: white;
+  background: #3b2f2f; /* Dark parchment-like background */
   padding: 20px;
   border-radius: 10px;
-  width: 80%; /* Reduced width */
-  max-width: 700px; /* Max width for larger screens */
-  max-height: 80vh; /* Max height for viewport */
-  overflow-y: auto; /* Enable vertical scrolling */
+  width: 80%;
+  max-width: 700px;
+  max-height: 80vh;
+  overflow-y: auto;
   position: relative;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-  animation: fadeIn 0.3s ease; 
+  box-shadow: 0 6px 30px rgba(0, 0, 0, 0.4);
+  animation: fadeIn 0.3s ease;
+  border: 2px solid #a67f58; /* Bronze border to match D&D styling */
 }
 
 @keyframes fadeIn {
@@ -127,51 +133,55 @@ function translateSpell() {
 
 .close-button {
   position: absolute;
-  top: 0px;
+  top: 10px;
   right: 20px;
   font-size: 1.5rem;
-  color: #888;
+  color: #ddd; /* Lighter color to match the theme */
   cursor: pointer;
   transition: color 0.2s ease;
-  background-color: white;
+  background: none;
 }
 
 .close-button:hover {
-  color: #ff5c5c; 
+  color: #e63946; /* Red highlight for hover */
 }
 
 .modal-content h2 {
-  font-size: 1.5rem;
+  font-size: 1.8rem; /* Slightly larger title */
   margin: 0;
-  color: #333;
+  color: #f1e9d2; /* Light parchment color for text */
+  text-align: center; /* Centered title for a more dramatic effect */
 }
 
 .modal-content p {
   margin: 10px 0;
-  line-height: 1.5; 
+  line-height: 1.6; 
+  color: #d4c4a1; /* Lighter parchment color for paragraph text */
+  font-size: 1.1rem;
 }
 
 button {
   padding: 10px 20px;
   border-radius: 6px;
   border: none;
-  background-color: #007bff;
-  color: white;
+  background-color: #b85c38; /* Red/brownish button for thematic look */
+  color: #fff;
   font-size: 1rem;
   cursor: pointer;
   transition: background-color 0.3s ease, box-shadow 0.2s ease;
   margin-top: 15px;
+  font-family: 'Cinzel', serif;
 }
 
 button:hover {
-  background-color: #0056b3;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  background-color: #9d3e26;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
 }
 
 strong {
   font-weight: bold;
-  color: #007bff;
-  font-size: 1.1rem;
+  color: #f1e9d2;
+  font-size: 1.2rem; /* Slightly larger to emphasize importance */
 }
 
 div p + p {
@@ -182,14 +192,66 @@ span {
   display: inline-block;
   margin-right: 10px;
   padding: 4px 8px;
-  background-color: #e9ecef;
+  background-color: #4b3832; /* Darker background for span */
   border-radius: 6px;
   font-size: 0.95rem;
-  color: #555;
+  color: #e9d8a6; /* Parchment color for text */
   font-weight: bold;
 }
 
 span:last-child {
   margin-right: 0;
-} 
+}
+
+@media (max-width: 770px) and (max-height: 945px) {
+  .close-button {
+    display: none;
+  }
+}
+
+/* Modal Styles */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.8);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.modal-content {
+  background-color: #1e1b18;
+  padding: 20px;
+  border-radius: 10px;
+  max-width: 600px;
+  min-width: 300px;
+  width: 100%;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+  color: #f8f5f2;
+}
+
+.close-button {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: #f8f5f2;
+  position: absolute;
+  top: 10px;
+  right: 10px;
+}
+
+.modal-body {
+  margin-top: 15px;
+}
+
+/* Esconde o botão de fechar em telas menores que 770x945 */
+@media (max-width: 770px) and (max-height: 945px) {
+  .close-button {
+    display: none;
+  }
+}
 </style>

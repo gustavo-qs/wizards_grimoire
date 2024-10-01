@@ -70,7 +70,7 @@
       <fieldset>
         <legend>Search for a spell:</legend>
         <input type="text" v-model="searchTerm" placeholder="Enter spell name" />
-      </fieldset><br>
+      </fieldset>
 
       <!-- List the filtered spells -->
       <div v-if="filteredSpells.length">
@@ -86,42 +86,48 @@
   </div>
 </template>
 
-<style scoped>
+<style>
+
+body {
+  background-color: #2b2a27;
+}
 
 input[type="text"] {
-  width: 100%; /* Full width input */
-  padding: 10px 15px; /* Padding around the input */
-  font-size: 1rem; /* Font size for better readability */
-  border-radius: 6px; /* Rounded corners */
-  border: 1px solid #ccc; /* Light border */
-  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1); /* Subtle inner shadow */
-  background-color: #f9f9f9; /* Light background color */
-  transition: all 0.3s ease; /* Smooth transition on focus */
+  width: 100%;
+  padding: 10px 15px;
+  font-size: 1rem;
+  border-radius: 6px;
+  border: 1px solid #7b1d0a; /* Dark red border */
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
+  background-color: #2b1b0e; /* Dark brown background */
+  color: #f8f5f2; /* Light text color */
+  transition: all 0.3s ease;
 }
 
 /* Focused state for the input */
 input[type="text"]:focus {
-  outline: none; /* Remove default outline */
-  border-color: #007bff; /* Blue border on focus */
-  background-color: #fff; /* White background on focus */
-  box-shadow: 0 0 6px rgba(0, 123, 255, 0.4); /* Glowing effect */
+  outline: none;
+  border-color: #d8b84a; /* Gold border on focus */
+  background-color: #3e2e1c; /* Slightly lighter brown background */
+  box-shadow: 0 0 6px rgba(216, 184, 74, 0.5); /* Gold glowing effect */
 }
 
 /* Input placeholder styling */
 input[type="text"]::placeholder {
-  color: #aaa; /* Lighter color for the placeholder */
-  font-style: italic; /* Optional: Make placeholder text italic */
+  color: #af8567; /* Muted brownish-gold placeholder */
+  font-style: italic;
 }
 
 /* Styling for the container */
 .container {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-family: 'Palatino Linotype', 'Book Antiqua', Palatino, serif; /* Medieval-style font */
   max-width: 900px;
   margin: 0 auto;
   padding: 20px;
-  background-color: #f0f8ff;
+  background-color: #1e1b18; /* Dark charcoal background */
   border-radius: 10px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+  color: #f8f5f2; /* Light text color */
 }
 
 /* Form styling */
@@ -131,7 +137,7 @@ form {
 
 label {
   font-weight: bold;
-  color: #333;
+  color: #d8b84a; /* Gold color for labels */
   font-size: 1rem;
 }
 
@@ -139,10 +145,11 @@ input[list="spells"] {
   margin-left: 10px;
   padding: 8px 12px;
   border-radius: 6px;
-  border: 1px solid #ccc;
+  border: 1px solid #7b1d0a; /* Dark red border */
   font-size: 1rem;
-  background-color: #fff;
-  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+  background-color: #3e2e1c; /* Dark brown background */
+  color: #f8f5f2; /* Light text */
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.2);
 }
 
 /* Button styling */
@@ -150,7 +157,7 @@ button {
   padding: 8px 16px;
   border-radius: 6px;
   border: none;
-  background-color: #007bff;
+  background-color: #7b1d0a; /* Deep red button */
   color: white;
   font-size: 1rem;
   cursor: pointer;
@@ -158,33 +165,33 @@ button {
 }
 
 button:hover {
-  background-color: #0056b3;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  background-color: #5f1407; /* Darker red on hover */
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 
 p {
   margin: 10px 0;
   font-size: 1rem;
-  color: #333;
+  color: #f8f5f2;
 }
 
 /* Styling for the translate button */
 button:nth-child(2) {
-  background-color: #28a745;
+  background-color: #d8b84a; /* Gold button */
 }
 
 button:nth-child(2):hover {
-  background-color: #218838;
+  background-color: #b09538; /* Darker gold on hover */
 }
 
 /* Bold titles for spell details */
 strong {
   font-weight: bold;
-  color: #007bff;
+  color: #d8b84a; /* Gold */
   font-size: 1.1rem;
 }
 
-/* Adding some margin to the descriptions and additional information */
+/* Additional margin for descriptions */
 div p + p {
   margin-top: 20px;
 }
@@ -193,14 +200,13 @@ span {
   display: inline-block;
   margin-right: 10px;
   padding: 4px 8px;
-  background-color: #e9ecef;
+  background-color: #7b1d0a; /* Deep red background for tags */
   border-radius: 6px;
   font-size: 0.95rem;
-  color: #555;
+  color: #f8f5f2; /* Light text */
   font-weight: bold;
 }
 
-/* Optional: Additional spacing for the last items */
 span:last-child {
   margin-right: 0;
 }
@@ -211,31 +217,30 @@ fieldset {
   padding: 10px;
   margin-bottom: 15px;
   display: flex;
-  flex-wrap: wrap; /* Allow wrapping */
-  gap: 10px; /* Add space between checkboxes */
+  flex-wrap: wrap;
+  gap: 10px;
 }
 
 legend {
   font-weight: bold;
   font-size: 1.1rem;
-  color: #007bff;
+  color: #d8b84a; /* Gold */
   margin-bottom: 10px;
 }
 
-/* Checkbox label styling */
 label {
-  display: flex; /* Change to flex for side-by-side layout */
-  align-items: center; /* Center the checkbox with label */
+  display: flex;
+  align-items: center;
 }
 
 input[type="checkbox"] {
   margin-right: 10px;
-  accent-color: #007bff;
+  accent-color: #d8b84a; /* Gold accent color for checkboxes */
 }
 
 /* Styling for filtered spell list */
 h3 {
-  color: #007bff;
+  color: #d8b84a;
   margin-bottom: 10px;
   font-size: 1.2rem;
   font-weight: bold;
@@ -251,7 +256,7 @@ ul {
 }
 
 li {
-  background-color: #e9f5ff;
+  background-color: #3e2e1c; /* Dark brown background */
   padding: 10px 15px;
   width: 150px;
   height: 50px;
@@ -260,8 +265,8 @@ li {
   align-items: center;
   margin-bottom: 10px;
   border-radius: 6px;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-  color: #333;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  color: #f8f5f2;
   font-size: 1rem;
   text-align: center;
 }
@@ -274,7 +279,7 @@ li {
 
   input[list="spells"], button {
     font-size: 0.9rem;
-    width: 100%; /* Make buttons and inputs full width */
+    width: 100%;
   }
 
   span, label, legend {
@@ -282,27 +287,27 @@ li {
   }
 
   li {
-    width: calc(50% - 10px); /* Two items per row */
+    width: calc(50% - 10px);
     font-size: 0.9rem;
   }
 
   fieldset {
-    flex-direction: column; /* Stack checkboxes vertically */
-    align-items: flex-start; /* Align items to start */
+    flex-direction: column;
+    align-items: flex-start;
   }
 }
 
 @media (max-width: 480px) {
   li {
-    width: 100%; /* Full width for smallest screens */
+    width: 100%;
   }
 
   button {
-    font-size: 0.85rem; /* Smaller button font size */
+    font-size: 0.85rem;
   }
 
   p, strong {
-    font-size: 0.9rem; /* Smaller text for better readability */
+    font-size: 0.9rem;
   }
 }
 
@@ -313,19 +318,21 @@ li {
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(0, 0, 0, 0.5);
+  background-color: rgba(0, 0, 0, 0.8);
   display: flex;
   justify-content: center;
   align-items: center;
 }
 
 .modal-content {
-  background-color: white;
+  background-color: #1e1b18;
   padding: 20px;
   border-radius: 10px;
   max-width: 600px;
+  min-width: 300px;
   width: 100%;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+  color: #f8f5f2;
 }
 
 .close-button {
@@ -333,6 +340,7 @@ li {
   border: none;
   font-size: 1.5rem;
   cursor: pointer;
+  color: #f8f5f2;
   position: absolute;
   top: 10px;
   right: 10px;
