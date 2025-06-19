@@ -3,6 +3,7 @@ import spells from '../assets/spells.json'
 import { ref, watch, onMounted } from 'vue'
 import { createDraggable } from 'animejs'
 import SpellModal from '../components/SpellModal.vue'
+import GrimoireModal from '../components/GrimoireModal.vue'
 
 const classes = ['Artificer', 'Bard', 'Cleric', 'Druid', 'Paladin', 'Ranger', 'Sorcerer', 'Warlock', 'Wizard'];
 const levels = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
@@ -17,6 +18,7 @@ const filteredSpells = ref([])
 const filteredGrimoireSpells = ref([])
 const selectedSpells = ref(new Map())
 const grimoireCheck = ref(false)
+const grimoireBookView = ref(true)
 
 function selectSpell() {
   spellObj.value = spells.find(spell => spell.name === selectedSpell.value)
@@ -25,7 +27,6 @@ function selectSpell() {
 
 function filterSpells() {
   if (grimoireCheck.value) {
-    // Filtra apenas as spells do grimório
     filteredGrimoireSpells.value = Array.from(selectedSpells.value.values()).filter(spell => {
       const matchesClass = selectedClasses.value.length === 0 || selectedClasses.value.some(cls => spell.classes.includes(cls));
       const matchesLevel = selectedLevels.value.length === 0 || selectedLevels.value.includes(spell.level);
@@ -33,7 +34,6 @@ function filterSpells() {
       return matchesClass && matchesLevel && matchesSearch;
     }).sort((a, b) => a.level - b.level);
   } else {
-    // Filtra todas as spells
     filteredSpells.value = spells.filter(spell => {
       const matchesClass = selectedClasses.value.length === 0 || selectedClasses.value.some(cls => spell.classes.includes(cls));
       const matchesLevel = selectedLevels.value.length === 0 || selectedLevels.value.includes(spell.level);
@@ -41,7 +41,6 @@ function filterSpells() {
       return matchesClass && matchesLevel && matchesSearch;
     }).sort((a, b) => a.level - b.level);
   }
-  // Sempre reinicializa o draggable após filtrar
   initDraggable();
 }
 
@@ -60,12 +59,10 @@ function handleSpellDrop(spellName) {
   if (!spellData) return
 
   if (!grimoireCheck.value) {
-    // Adiciona ao grimório se não estiver lá
     if (!selectedSpells.value.has(spellName)) {
       selectedSpells.value.set(spellName, spellData)
     }
   } else {
-    // Remove do grimório se estiver lá
     if (selectedSpells.value.has(spellName)) {
       selectedSpells.value.delete(spellName)
     }
@@ -98,18 +95,27 @@ function initDraggable() {
   }, 0);
 }
 
-// Filtros reativos
 watch([searchTerm, selectedClasses, selectedLevels], filterSpells, { deep: true });
 watch(selectedSpells, () => {
   if (grimoireCheck.value) filterSpells()
 }, { deep: true });
-
+watch(grimoireBookView, () => {
+  initDraggable();
+});
+watch(grimoireCheck, () => {
+  initDraggable();
+});
 onMounted(() => {
   filterSpells()
 });
 </script>
 
 <template>
+  <GrimoireModal
+    :show="grimoireCheck && grimoireBookView"
+    :spells="selectedSpells"
+    @update:show="val => { if (!val) grimoireCheck = false }"
+  />
   <div class="page">
     <img src="/logo.png" alt="Logo" class="logo-outside"/>
 
@@ -150,7 +156,14 @@ onMounted(() => {
             </button>
           </label>
         </div>
-        <div v-if="grimoireCheck ? filteredGrimoireSpells.length : filteredSpells.length">
+        <div style="margin-bottom: 12px; display: flex; justify-content: flex-end;">
+          <label style="font-size: 1rem; color: #d8b84a;">
+            <input type="checkbox" v-model="grimoireBookView" style="margin-right: 8px;" />
+            Visualizar grimório como livro
+          </label>
+        </div>
+        <!-- Lista de spells só aparece se não estiver no modo livro -->
+        <div v-if="grimoireCheck ? (!grimoireBookView && filteredGrimoireSpells.length) : filteredSpells.length">
           <ul>
             <li
               class="spell"
@@ -163,7 +176,8 @@ onMounted(() => {
             </li>
           </ul>
         </div>
-        <p v-else>No spells match the selected filters.</p>
+        <p v-else-if="!grimoireBookView && grimoireCheck && !filteredGrimoireSpells.length">No spells match the selected filters.</p>
+        <p v-else-if="!grimoireCheck && !filteredSpells.length">No spells match the selected filters.</p>
       </form>
     </div>
 
