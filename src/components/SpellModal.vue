@@ -102,22 +102,32 @@ function translateSpell() {
   justify-content: center;
   align-items: center;
   z-index: 1000;
-  padding: 10px;
-  font-family: 'Cinzel', serif; /* Fantasy-like font for D&D aesthetic */
+  padding: 10px; /* Adiciona margem interna uniforme */
+  box-sizing: border-box; /* Inclui padding no cálculo da largura */
 }
 
 .modal-content {
   background: #3b2f2f; /* Dark parchment-like background */
   padding: 20px;
   border-radius: 10px;
-  width: 80%;
-  max-width: 700px;
-  max-height: 80vh;
-  overflow-y: auto;
+  width: calc(100% - 20px); /* Ajusta largura para respeitar o padding da overlay */
+  max-width: 700px; /* Mantém o limite máximo */
+  max-height: 90vh; /* Limita a altura para caber na tela */
+  box-sizing: border-box; /* Inclui padding e borda no cálculo da largura */
+  overflow-y: auto; /* Permite rolagem vertical */
   position: relative;
   box-shadow: 0 6px 30px rgba(0, 0, 0, 0.4);
   animation: fadeIn 0.3s ease;
   border: 2px solid #a67f58; /* Bronze border to match D&D styling */
+}
+
+/* Oculta o scroll */
+.modal-content::-webkit-scrollbar {
+  width: 0; /* Remove a barra de rolagem */
+}
+
+.modal-content {
+  scrollbar-width: none; /* Remove a barra de rolagem no Firefox */
 }
 
 @keyframes fadeIn {
@@ -252,6 +262,13 @@ span:last-child {
 @media (max-width: 770px) and (max-height: 945px) {
   .close-button {
     display: none;
+  }
+}
+
+@media (max-width: 768px) {
+  .modal-content {
+    width: 95%; /* Ajusta a largura para telas menores */
+    max-width: none; /* Remove o limite máximo para telas pequenas */
   }
 }
 </style>

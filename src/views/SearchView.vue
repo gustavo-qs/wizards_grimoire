@@ -1,92 +1,311 @@
 <script setup>
-  import spells from '../assets/spells.json'
-  import { ref, watch } from 'vue'
-  import SpellModal from '../components/SpellModal.vue'
+import spells from '../assets/spells.json'
+import { ref, watch, onMounted } from 'vue'
+import { createDraggable } from 'animejs'
+import SpellModal from '../components/SpellModal.vue'
 
-  const classes = ['Artificer', 'Bard', 'Cleric', 'Druid', 'Paladin', 'Ranger', 'Sorcerer', 'Warlock', 'Wizard'];
-  const levels = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
+const classes = ['Artificer', 'Bard', 'Cleric', 'Druid', 'Paladin', 'Ranger', 'Sorcerer', 'Warlock', 'Wizard'];
+const levels = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
 
-  var selectedSpell = ref(null),
-      spellObj = ref(null),
-      showModal = ref(false),
-      selectedClasses = ref([]),
-      selectedLevels = ref([]),
-      searchTerm = ref(''), // Add this to track the search term
-      filteredSpells = ref(spells.sort((a, b) => a.level - b.level));
+const selectedSpell = ref(null)
+const spellObj = ref(null)
+const showModal = ref(false)
+const selectedClasses = ref([])
+const selectedLevels = ref([])
+const searchTerm = ref('')
+const filteredSpells = ref([])
+const filteredGrimoireSpells = ref([])
+const selectedSpells = ref(new Map())
+const grimoireCheck = ref(false)
 
-  function selectSpell() {
-    spellObj.value = spells.find(spell => spell.name === selectedSpell.value);
-    showModal.value = true;
-  }
+function selectSpell() {
+  spellObj.value = spells.find(spell => spell.name === selectedSpell.value)
+  showModal.value = true
+}
 
-  function filterSpells(){
+function filterSpells() {
+  if (grimoireCheck.value) {
+    // Filtra apenas as spells do grimório
+    filteredGrimoireSpells.value = Array.from(selectedSpells.value.values()).filter(spell => {
+      const matchesClass = selectedClasses.value.length === 0 || selectedClasses.value.some(cls => spell.classes.includes(cls));
+      const matchesLevel = selectedLevels.value.length === 0 || selectedLevels.value.includes(spell.level);
+      const matchesSearch = spell.name.toLowerCase().includes(searchTerm.value.toLowerCase());
+      return matchesClass && matchesLevel && matchesSearch;
+    }).sort((a, b) => a.level - b.level);
+  } else {
+    // Filtra todas as spells
     filteredSpells.value = spells.filter(spell => {
       const matchesClass = selectedClasses.value.length === 0 || selectedClasses.value.some(cls => spell.classes.includes(cls));
       const matchesLevel = selectedLevels.value.length === 0 || selectedLevels.value.includes(spell.level);
-      const matchesSearch = spell.name.toLowerCase().includes(searchTerm.value.toLowerCase()); // Add search functionality
+      const matchesSearch = spell.name.toLowerCase().includes(searchTerm.value.toLowerCase());
       return matchesClass && matchesLevel && matchesSearch;
+    }).sort((a, b) => a.level - b.level);
+  }
+  // Sempre reinicializa o draggable após filtrar
+  initDraggable();
+}
+
+function selectFilteredSpell(spellName) {
+  selectedSpell.value = spellName
+  selectSpell()
+}
+
+function selectGrimoire() {
+  grimoireCheck.value = !grimoireCheck.value
+  filterSpells()
+}
+
+function handleSpellDrop(spellName) {
+  const spellData = spells.find(s => s.name === spellName)
+  if (!spellData) return
+
+  if (!grimoireCheck.value) {
+    // Adiciona ao grimório se não estiver lá
+    if (!selectedSpells.value.has(spellName)) {
+      selectedSpells.value.set(spellName, spellData)
+    }
+  } else {
+    // Remove do grimório se estiver lá
+    if (selectedSpells.value.has(spellName)) {
+      selectedSpells.value.delete(spellName)
+    }
+  }
+  filterSpells()
+}
+
+function initDraggable() {
+  setTimeout(() => {
+    document.querySelectorAll('.spell').forEach(spell => {
+      const draggable = createDraggable(spell, {
+        onRelease: () => {
+          const rect = spell.getBoundingClientRect();
+          const book = document.querySelector('.book');
+          const bookRect = book.getBoundingClientRect();
+
+          if (
+            rect.left < bookRect.right &&
+            rect.right > bookRect.left &&
+            rect.top < bookRect.bottom &&
+            rect.bottom > bookRect.top
+          ) {
+            const spellName = spell.textContent.split('  (')[0].trim();
+            handleSpellDrop(spellName)
+          }
+          draggable.reset();
+        }
+      });
     });
+  }, 0);
+}
 
-    filteredSpells.value = filteredSpells.value.sort((a, b) => a.level - b.level);
-  }
+// Filtros reativos
+watch([searchTerm, selectedClasses, selectedLevels], filterSpells, { deep: true });
+watch(selectedSpells, () => {
+  if (grimoireCheck.value) filterSpells()
+}, { deep: true });
 
-  // Watch searchTerm and apply filtering as the user types
-  watch(searchTerm, () => {
-    filterSpells();
-  });
-
-  function selectFilteredSpell(spellName) {
-    selectedSpell.value = spellName;
-    selectSpell();
-  }
+onMounted(() => {
+  filterSpells()
+});
 </script>
 
 <template>
-  <div class="container">
-    <form @submit.prevent>
-      <SpellModal v-if="spellObj" :show="showModal" :spell="spellObj" @close="showModal = false" />
+  <div class="page">
+    <img src="/logo.png" alt="Logo" class="logo-outside"/>
 
-      <fieldset>
-        <legend>Classes:</legend>
-        <div v-for="cls in classes" :key="cls">
+    <div class="container">
+      <form @submit.prevent>
+        <SpellModal v-if="spellObj" :show="showModal" :spell="spellObj" @close="showModal = false" />
+
+        <fieldset>
+          <legend>Classes:</legend>
+          <div v-for="cls in classes" :key="cls">
+            <label>
+              <input type="checkbox" :value="cls" v-model="selectedClasses" />
+              {{ cls }}
+            </label>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>Levels:</legend>
+          <div v-for="level in levels" :key="level">
+            <label>
+              <input type="checkbox" :value="level" v-model="selectedLevels" />
+              {{ level === 0 ? 'Cantrip' : 'Level ' + level }}
+            </label>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>Search for a spell:</legend>
+          <input type="text" v-model="searchTerm" placeholder="Enter spell name" />
+        </fieldset>
+
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <h3>Spells:</h3>
           <label>
-            <input type="checkbox" :value="cls" v-model="selectedClasses" @change="filterSpells" />
-            {{ cls }}
+            <button type="button" @click="selectGrimoire()">
+              {{ grimoireCheck ? 'All Spells' : 'Grimoire Spells' }}
+            </button>
           </label>
         </div>
-      </fieldset>
-
-      <!-- Level checkboxes -->
-      <fieldset>
-        <legend>Levels:</legend>
-        <div v-for="level in levels" :key="level">
-          <label>
-            <input type="checkbox" :value="level" v-model="selectedLevels" @change="filterSpells" />
-            {{ level === 0 ? 'Cantrip' : 'Level ' + level }}
-          </label>
+        <div v-if="grimoireCheck ? filteredGrimoireSpells.length : filteredSpells.length">
+          <ul>
+            <li
+              class="spell"
+              v-for="spell in grimoireCheck ? filteredGrimoireSpells : filteredSpells"
+              :key="spell.name"
+              @click="selectFilteredSpell(spell.name)"
+              style="cursor: pointer; user-select: none;"
+            >
+              {{ spell.name }} <br> (Level: {{ spell.level }})
+            </li>
+          </ul>
         </div>
-      </fieldset>
+        <p v-else>No spells match the selected filters.</p>
+      </form>
+    </div>
 
-      <fieldset>
-        <legend>Search for a spell:</legend>
-        <input type="text" v-model="searchTerm" placeholder="Enter spell name" />
-      </fieldset>
-
-      <!-- List the filtered spells -->
-      <div v-if="filteredSpells.length">
-        <h3>Spells:</h3>
-        <ul>
-          <li v-for="spell in filteredSpells" :key="spell.name" @click="selectFilteredSpell(spell.name)">
-            {{ spell.name }} <br> (Level: {{ spell.level }})
-          </li>
-        </ul>
+    <div @click="selectGrimoire()" class="book">
+      <div class="book-cover cover1">
+        <div class="effect"></div>
+        <div class="light"></div>
       </div>
-      <p v-else>No spells match the selected filters.</p>
-    </form>
+      <div class="book-inside"></div>
+    </div>
   </div>
 </template>
 
 <style>
+
+.spell{
+  z-index: 3;
+}
+
+.book {
+  width: 225px;
+  height: 350px;
+  position: fixed; 
+  text-align: center;
+  top: 40px; 
+  margin:2.5%;
+  margin-right: 10%;
+  right: 0;
+  z-index: 1;
+  box-shadow:
+    0 16px 40px 0 #000000a0,
+    0 2px 8px 0 #d8b84a80,
+    0 0 0 8px #fff0 inset;
+  transform: perspective(1200px) rotateY(-12deg) rotateX(8deg) scale(1.05);
+  transition: 
+    box-shadow 0.4s cubic-bezier(.4,2,.6,1),
+    transform 0.4s cubic-bezier(.4,2,.6,1);
+  animation: book-float 2.5s ease-in-out infinite alternate;
+}
+
+@keyframes book-float {
+  0% { transform: perspective(1200px) rotateY(-12deg) rotateX(8deg) scale(1.05) translateY(0); }
+  100% { transform: perspective(1200px) rotateY(-12deg) rotateX(8deg) scale(1.08) translateY(-12px); }
+}
+
+.book:hover {
+  box-shadow:
+    0 32px 80px 0 #000000cc,
+    0 4px 16px 0 #d8b84a,
+    0 0 0 12px #fff2 inset;
+  transform: perspective(1200px) rotateY(-18deg) rotateX(12deg) scale(1.12) translateY(-8px);
+}
+
+.book-cover {
+  position: absolute;
+  z-index:1;
+  width: 100%;
+  height: 100%;
+  transform-origin: 0 50%;
+  -webkit-transform-origin: 0 50%;
+  background: #111;
+  background-size:cover;
+  border-radius: 3px;
+  box-shadow: 
+    inset 4px 1px 3px #ffffff60,
+    inset 0 -1px 2px #00000080;
+  transition: all .5s ease-in-out;
+  -webkit-transition: all .5s ease-in-out;
+}
+.book .book-cover {
+  background-size: 100% 100%;
+}
+
+.effect {
+  width: 20px;
+  height: 100%;
+  margin-left: 10px;
+  border-left: 2px solid #00000030;
+  background-image: linear-gradient(90deg, rgba(80,70,50,0.25) 0%, rgba(40,30,20,0.05) 100%);
+  filter: blur(1px) grayscale(0.4) brightness(0.7);
+  transition: all .5s ease;
+}
+
+.light {
+  width: 90%;
+  height: 100%;
+  position: absolute;
+  border-radius: 3px; 
+  background-image: linear-gradient(90deg, rgba(60,50,30,0) 0%, rgba(120,110,80,0.10) 100%);
+  top: 0;
+  right:0;
+  opacity: .06;
+  filter: blur(1.5px) grayscale(0.5) brightness(0.7);
+  transition: all .5s ease;
+  -webkit-transition: all .5s ease;
+}
+
+.book:hover { cursor:pointer; }
+
+.book:hover .book-cover {
+  transform: perspective(2000px) rotateY(-30deg);
+  -webkit-transform: perspective(2000px) rotateY(-30deg);
+  transform-style: preserve-3d;
+  -webkit-transform-style: preserve-3d;
+  box-shadow: 
+    inset 4px 1px 3px #ffffff60,
+    inset 0 -1px 2px #00000080,
+    10px 0px 10px -5px #00000030
+}
+
+.book:hover .effect {
+  width: 40px;
+}
+
+.book:hover .light {
+  opacity: 1;
+  width: 70%;
+}
+
+.book-inside{
+  width: calc(100% - 2px);
+  height:96%;
+  position:relative;
+  top: 2%;
+  border: 1px solid grey;
+  border-radius:3px;
+  background: white;
+  box-shadow: 
+  10px 40px 40px -10px #6b4f1d60, /* mais amarelado e envelhecido */
+  inset -2px 0 0 #a0833a,
+  inset -3px 0 0 #b58c1a,
+  inset -4px 0 0 #f5e7c6,
+  inset -5px 0 0 #e6d8b2,
+  inset -6px 0 0 #f5e7c6,
+  inset -7px 0 0 #e6d8b2,
+  inset -8px 0 0 #f5e7c6,
+  inset -9px 0 0 #e6d8b2;
+}
+
+.cover1 {
+  background: url('/book.png');
+}
 
 body {
   background-color: #2b2a27;
@@ -128,6 +347,19 @@ input[type="text"]::placeholder {
   border-radius: 10px;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
   color: #f8f5f2; /* Light text color */
+  flex: 1 1 0;
+}
+
+/* Logo styles */
+.logo-container {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.logo {
+  max-width: 200px;
+  height: auto;
 }
 
 /* Form styling */
@@ -154,16 +386,17 @@ input[list="spells"] {
 
 /* Button styling */
 button {
-  padding: 8px 16px;
+  padding: 10px 20px;
   border-radius: 6px;
   border: none;
-  background-color: #7b1d0a; /* Deep red button */
-  color: white;
+  background-color: #b85c38; /* Red/brownish button for thematic look */
+  color: #fff;
   font-size: 1rem;
   cursor: pointer;
   transition: background-color 0.3s ease, box-shadow 0.2s ease;
+  margin-top: 15px;
+  font-family: 'Cinzel', serif;
 }
-
 button:hover {
   background-color: #5f1407; /* Darker red on hover */
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
@@ -311,6 +544,7 @@ li {
   }
 }
 
+
 /* Modal Styles */
 .modal-overlay {
   position: fixed;
@@ -349,4 +583,37 @@ li {
 .modal-body {
   margin-top: 15px;
 }
+
+/* Wrapper for the page */
+.page {
+  display: block;
+  position: relative;
+  min-height: 400px;
+}
+
+.logo-outside {
+  position: absolute;
+  top: 20px;
+  left: 20px; 
+  /* max-width: 250px;
+  min-width: none; */
+  height: auto;
+  z-index: 1;
+}
+
+.grid-cell {
+  background-color: #3e2e1c; /* Dark brown background */
+  padding: 10px 15px;
+  width: 200px;
+  height: 100px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 10px;
+  border-radius: 6px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  color: #f8f5f2;
+  font-size: 1rem;
+}
+
 </style>
