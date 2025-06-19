@@ -1,6 +1,8 @@
 <script setup>
   import spells from '../assets/spells.json'
   import { ref, watch } from 'vue'
+  import { onMounted } from 'vue';
+  import { animate, createDraggable } from 'animejs';
   import SpellModal from '../components/SpellModal.vue'
 
   const classes = ['Artificer', 'Bard', 'Cleric', 'Druid', 'Paladin', 'Ranger', 'Sorcerer', 'Warlock', 'Wizard'];
@@ -39,50 +41,100 @@
     selectedSpell.value = spellName;
     selectSpell();
   }
-</script>
+
+    onMounted(() => {
+      // Initialize the draggable elements
+      document.querySelectorAll('.spell').forEach(spell => {
+        createDraggable(spell, {
+          onRelease: () => {
+            const rect = spell.getBoundingClientRect();
+            const grids = document.querySelectorAll('.grid-cell');
+            
+            grids.forEach(grid => {
+              const gridRect = grid.getBoundingClientRect();
+              if (
+                rect.left >= gridRect.left &&
+                rect.right <= gridRect.right &&
+                rect.top >= gridRect.top &&
+                rect.bottom <= gridRect.bottom
+              ) {
+                grid.textContent = `${spell.textContent.trim()}`;
+
+                // return spell to its original position
+                animate(spell, {
+                  translateX: 0,
+                  translateY: 0,
+                  duration: 500,
+                  easing: 'easeInOutQuad'
+                });
+
+              }
+            });
+
+            
+          }
+        });
+      });
+    });</script>
 
 <template>
-  <div class="container">
-    <form @submit.prevent>
-      <SpellModal v-if="spellObj" :show="showModal" :spell="spellObj" @close="showModal = false" />
+  <div class="page">
+    <img src="/logo.png" alt="Logo" class="logo-outside" style="max-width: 400px; min-width: 300px;" />
 
-      <fieldset>
-        <legend>Classes:</legend>
-        <div v-for="cls in classes" :key="cls">
-          <label>
-            <input type="checkbox" :value="cls" v-model="selectedClasses" @change="filterSpells" />
-            {{ cls }}
-          </label>
-        </div>
-      </fieldset>
-
-      <!-- Level checkboxes -->
-      <fieldset>
-        <legend>Levels:</legend>
-        <div v-for="level in levels" :key="level">
-          <label>
-            <input type="checkbox" :value="level" v-model="selectedLevels" @change="filterSpells" />
-            {{ level === 0 ? 'Cantrip' : 'Level ' + level }}
-          </label>
-        </div>
-      </fieldset>
-
-      <fieldset>
-        <legend>Search for a spell:</legend>
-        <input type="text" v-model="searchTerm" placeholder="Enter spell name" />
-      </fieldset>
-
-      <!-- List the filtered spells -->
-      <div v-if="filteredSpells.length">
-        <h3>Spells:</h3>
-        <ul>
-          <li v-for="spell in filteredSpells" :key="spell.name" @click="selectFilteredSpell(spell.name)">
-            {{ spell.name }} <br> (Level: {{ spell.level }})
-          </li>
-        </ul>
+      <div class="grid" style="position: absolute; right: 20px; top: 0;">
+        <div 
+        v-for="n in 9" 
+        :key="n" 
+        class="grid-cell">
+        </div><
       </div>
-      <p v-else>No spells match the selected filters.</p>
-    </form>
+
+    <div class="container">
+      <form @submit.prevent>
+        <SpellModal v-if="spellObj" :show="showModal" :spell="spellObj" @close="showModal = false" />
+
+        <fieldset>
+          <legend>Classes:</legend>
+          <div v-for="cls in classes" :key="cls">
+            <label>
+              <input type="checkbox" :value="cls" v-model="selectedClasses" @change="filterSpells" />
+              {{ cls }}
+            </label>
+          </div>
+        </fieldset>
+
+        <!-- Level checkboxes -->
+        <fieldset>
+          <legend>Levels:</legend>
+          <div v-for="level in levels" :key="level">
+            <label>
+              <input type="checkbox" :value="level" v-model="selectedLevels" @change="filterSpells" />
+              {{ level === 0 ? 'Cantrip' : 'Level ' + level }}
+            </label>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>Search for a spell:</legend>
+          <input type="text" v-model="searchTerm" placeholder="Enter spell name" />
+        </fieldset>
+
+        <!-- List the filtered spells -->
+        <div v-if="filteredSpells.length">
+          <h3>Spells:</h3>
+          <ul>
+            <li class="spell" v-for="spell in filteredSpells" :key="spell.name" @click="selectFilteredSpell(spell.name)" style="cursor: pointer; user-select: none;">
+              {{ spell.name }} <br> (Level: {{ spell.level }})
+            </li>
+          </ul>
+        </div>
+        <p v-else>No spells match the selected filters.</p>
+      </form>
+
+      <div class="grid">
+        <div v-for="n in 9" :key="n" class="grid-cell"></div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -128,6 +180,18 @@ input[type="text"]::placeholder {
   border-radius: 10px;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
   color: #f8f5f2; /* Light text color */
+}
+
+/* Logo styles */
+.logo-container {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.logo {
+  max-width: 200px;
+  height: auto;
 }
 
 /* Form styling */
@@ -295,6 +359,15 @@ li {
     flex-direction: column;
     align-items: flex-start;
   }
+
+  /* Logo styles for outside positioning */
+.logo-outside {
+  position: absolute;
+  top: 20px; /* Margin top */
+  left: 20px; /* Align to the left */
+  max-width: 200px; /* Smaller size for tablets */
+  transition: all 0.3s ease; /* Smooth resizing */
+}
 }
 
 @media (max-width: 480px) {
@@ -309,7 +382,16 @@ li {
   p, strong {
     font-size: 0.9rem;
   }
+
+  /* Logo styles for outside positioning */
+.logo-outside {
+  position: absolute;
+  top: 10px; /* Adjust margin top */
+  left: 10px; /* Adjust margin left */
+  max-width: 150px; /* Smaller size for mobile */
 }
+}
+
 
 /* Modal Styles */
 .modal-overlay {
@@ -348,5 +430,45 @@ li {
 
 .modal-body {
   margin-top: 15px;
+}
+
+/* Wrapper for the page */
+.page {
+  display: flex;
+  align-items: flex-start;
+  position: relative;
+}
+
+/* Logo styles for outside positioning */
+.logo-outside {
+  position: absolute;
+  top: 20px; /* Margin top */
+  left: 20px; /* Align to the left */
+  max-width: 250px; /* Initial size */
+  height: auto;
+  z-index: 1; /* Ensure it doesn't overlap content */
+}
+
+.grid-cell {
+  background-color: #3e2e1c; /* Dark brown background */
+  padding: 10px 15px;
+  width: 200px;
+  height: 100px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 10px;
+  border-radius: 6px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  color: #f8f5f2;
+  font-size: 1rem;
+  text-align: center;
+}
+
+/* Remove logo for smaller screens */
+@media (max-width: 2038px) {
+  .logo-outside {
+    display: none; /* Hide logo */
+  }
 }
 </style>
