@@ -32,9 +32,39 @@
           <span v-for="savingThrow in Array.from(savingThrows)" :key="savingThrow">{{ savingThrow }} </span>
         </p>
 
-        <button @click="translateSpell">
-          {{ translate ? 'Show Original' : 'Translate' }}
-        </button>
+        <!-- Spell Management Buttons -->
+        <div class="spell-actions">
+          <button @click="toggleFavorite" class="favorite-btn" :class="{ 'is-favorite': spellStore.isFavorite(selectedSpell.id) }">
+            {{ spellStore.isFavorite(selectedSpell.id) ? '★' : '☆' }} Favorite
+          </button>
+
+          <div class="spellbook-dropdown">
+            <button @click="toggleSpellbookMenu" class="spellbook-btn">
+              📖 Add to Spellbook
+            </button>
+            <div v-if="showSpellbookMenu" class="spellbook-menu">
+              <div v-if="spellStore.spellbooks.length === 0" class="empty-menu">
+                No spellbooks yet. Create one in the Spellbooks tab!
+              </div>
+              <label
+                v-for="spellbook in spellStore.spellbooks"
+                :key="spellbook.id"
+                class="spellbook-option"
+              >
+                <input
+                  type="checkbox"
+                  :checked="spellStore.isInSpellbook(spellbook.id, selectedSpell.id)"
+                  @change="toggleSpellInSpellbook(spellbook.id)"
+                />
+                {{ spellbook.name }}
+              </label>
+            </div>
+          </div>
+
+          <button @click="translateSpell" class="translate-btn">
+            {{ translate ? 'Show Original' : 'Translate' }}
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -44,6 +74,9 @@
 import translatedSpells from '../assets/translated_spells.json';
 import spells from '../assets/spells.json';
 import { defineProps, watch, ref } from 'vue';
+import { useSpellStore } from '../stores/spellStore';
+
+const spellStore = useSpellStore();
 
 const translate = ref(false);
 const selectedSpell = ref({});
@@ -51,6 +84,7 @@ const diceNotations = ref(new Set());
 const savingThrows = ref(new Set());
 const diceNotationRegex = /\b\d+d\d+(?:\s*\+\s*\d+)?(?:\s+\w+\s+damage)?\b/g;
 const savingThrowRegex = /\b(Intelligence|Dexterity|Strength|Charisma|Constitution|Wisdom)\s+saving throw\b/gi;
+const showSpellbookMenu = ref(false);
 
 const props = defineProps({
   show: Boolean,
@@ -86,6 +120,26 @@ function translateSpell() {
   translate.value = !translate.value; // Toggle translation
   const spellList = translate.value ? translatedSpells : spells;
   selectedSpell.value = spellList.find(spell => spell.id === selectedSpell.value.id) || selectedSpell.value;
+}
+
+function toggleFavorite() {
+  if (selectedSpell.value.id) {
+    spellStore.toggleFavorite(selectedSpell.value.id);
+  }
+}
+
+function toggleSpellbookMenu() {
+  showSpellbookMenu.value = !showSpellbookMenu.value;
+}
+
+function toggleSpellInSpellbook(spellbookId) {
+  if (!selectedSpell.value.id) return;
+
+  if (spellStore.isInSpellbook(spellbookId, selectedSpell.value.id)) {
+    spellStore.removeSpellFromSpellbook(spellbookId, selectedSpell.value.id);
+  } else {
+    spellStore.addSpellToSpellbook(spellbookId, selectedSpell.value.id);
+  }
 }
 </script>
 
@@ -186,6 +240,101 @@ button {
 button:hover {
   background-color: #9d3e26;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+/* Spell Actions Section */
+.spell-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+  flex-wrap: wrap;
+}
+
+.favorite-btn {
+  background-color: #3e2e1c;
+  color: #d8b84a;
+  margin: 0;
+  flex: 1;
+  min-width: 120px;
+}
+
+.favorite-btn.is-favorite {
+  background-color: #d8b84a;
+  color: #1e1b18;
+  font-weight: bold;
+}
+
+.favorite-btn:hover {
+  background-color: #4e3e2c;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.favorite-btn.is-favorite:hover {
+  background-color: #f0d05c;
+}
+
+.spellbook-dropdown {
+  position: relative;
+  flex: 1;
+  min-width: 180px;
+}
+
+.spellbook-btn {
+  width: 100%;
+  background-color: #7b1d0a;
+  margin: 0;
+}
+
+.spellbook-btn:hover {
+  background-color: #5f1407;
+}
+
+.spellbook-menu {
+  position: absolute;
+  bottom: 100%;
+  left: 0;
+  right: 0;
+  background-color: #2a2420;
+  border: 2px solid #7b1d0a;
+  border-radius: 6px;
+  margin-bottom: 5px;
+  max-height: 200px;
+  overflow-y: auto;
+  z-index: 10;
+  box-shadow: 0 -4px 15px rgba(0, 0, 0, 0.4);
+}
+
+.spellbook-option {
+  display: flex;
+  align-items: center;
+  padding: 10px 12px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  user-select: none;
+  gap: 10px;
+}
+
+.spellbook-option:hover {
+  background-color: #3e2e1c;
+}
+
+.spellbook-option input[type="checkbox"] {
+  accent-color: #d8b84a;
+  cursor: pointer;
+}
+
+.empty-menu {
+  padding: 15px;
+  text-align: center;
+  color: #d8b84a;
+  font-size: 0.9rem;
+  font-style: italic;
+}
+
+.translate-btn {
+  flex: 1;
+  min-width: 120px;
+  margin: 0;
 }
 
 strong {

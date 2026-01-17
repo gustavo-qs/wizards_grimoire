@@ -35,16 +35,20 @@
     <!-- Search Tab -->
     <div v-if="activeTab === 'search'" class="container">
       <!-- Quick Search -->
-      <form @submit.prevent>
+      <form @submit.prevent="selectSpell(searchQuery)">
         <label>Find a spell:
           <input
             v-model="searchQuery"
             type="text"
+            list="spells"
             name="spells"
             placeholder="Type spell name or keywords..."
-            class="search-input"
           />
         </label>
+        <datalist id="spells">
+          <option v-for="spell in filteredSpells" :key="spell.name" :value="spell.name" />
+        </datalist><br>
+        <button @click="selectSpell(searchQuery)" type="submit">Search</button>
       </form>
 
       <SpellModal v-if="spellObj" :show="showModal" :spell="spellObj" @close="showModal = false" />
@@ -90,17 +94,6 @@
           <label>
             <input type="checkbox" :value="level" v-model="selectedLevels" />
             {{ level === 0 ? 'Cantrip' : 'Level ' + level }}
-          </label>
-        </div>
-      </fieldset>
-
-      <!-- Spellbooks checkboxes -->
-      <fieldset v-if="spellStore.spellbooks.length > 0">
-        <legend>Spellbooks:</legend>
-        <div v-for="spellbook in spellStore.spellbooks" :key="spellbook.id">
-          <label>
-            <input type="checkbox" :value="spellbook.id" v-model="selectedSpellbooks" />
-            {{ spellbook.name }} ({{ spellbook.spellIds.length }})
           </label>
         </div>
       </fieldset>
@@ -178,7 +171,6 @@ const spellObj = ref(null)
 const showModal = ref(false)
 const selectedClasses = ref([])
 const selectedLevels = ref([])
-const selectedSpellbooks = ref([])
 const activeTab = ref('search') // 'search', 'spellbooks', 'slots', 'filters'
 const searchQuery = ref('')
 
@@ -204,15 +196,6 @@ const filteredSpells = computed(() => {
   // Basic level filter
   if (selectedLevels.value.length > 0) {
     result = result.filter(spell => selectedLevels.value.includes(spell.level))
-  }
-
-  // Spellbooks filter
-  if (selectedSpellbooks.value.length > 0) {
-    const allSpellIdsFromSelectedBooks = selectedSpellbooks.value.flatMap(sbId => {
-      const sb = spellStore.spellbooks.find(s => s.id === sbId)
-      return sb ? sb.spellIds : []
-    })
-    result = result.filter(spell => allSpellIdsFromSelectedBooks.includes(spell.id))
   }
 
   // Search query
@@ -318,9 +301,7 @@ watch(searchQuery, () => {
 .page {
   min-height: 100vh;
   padding: 20px;
-  margin: 0;
   background: linear-gradient(to bottom, #0d0b0a 0%, #1e1b18 100%);
-  box-sizing: border-box;
 }
 
 /* Tabs Navigation */
@@ -440,7 +421,7 @@ label {
   font-size: 1rem;
 }
 
-.search-input {
+input[list="spells"] {
   margin-left: 10px;
   padding: 10px 14px;
   border-radius: 6px;
@@ -453,7 +434,7 @@ label {
   transition: border-color 0.3s;
 }
 
-.search-input:focus {
+input[list="spells"]:focus {
   border-color: #d8b84a;
   outline: none;
 }
@@ -532,18 +513,21 @@ h3 {
 ul {
   list-style-type: none;
   padding-left: 0;
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 12px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
 }
 
 li.spell {
   background: linear-gradient(135deg, #3e2e1c 0%, #2a2420 100%);
   padding: 12px 16px;
+  width: calc(50% - 5px);
   min-height: 70px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+  margin-bottom: 10px;
   border-radius: 8px;
   box-shadow: 0 3px 8px rgba(0, 0, 0, 0.3);
   color: #f8f5f2;
@@ -627,7 +611,7 @@ li.spell:hover {
     min-width: 100%;
   }
 
-  .search-input {
+  input[list="spells"] {
     width: 100%;
     margin-left: 0;
     margin-top: 10px;
@@ -638,8 +622,8 @@ li.spell:hover {
     font-size: 0.9rem;
   }
 
-  ul {
-    grid-template-columns: 1fr;
+  li.spell {
+    width: 100%;
   }
 
   fieldset {
